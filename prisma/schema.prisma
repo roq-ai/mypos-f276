@@ -1,0 +1,115 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model add_on {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String    @db.VarChar(255)
+  food_item_id String    @db.Uuid
+  created_at   DateTime  @default(now()) @db.Timestamp(6)
+  updated_at   DateTime  @default(now()) @db.Timestamp(6)
+  food_item    food_item @relation(fields: [food_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model category {
+  id            String         @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String         @db.VarChar(255)
+  restaurant_id String         @db.Uuid
+  created_at    DateTime       @default(now()) @db.Timestamp(6)
+  updated_at    DateTime       @default(now()) @db.Timestamp(6)
+  restaurant    restaurant     @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sub_category  sub_category[]
+}
+
+model discount {
+  id            String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name          String     @db.VarChar(255)
+  percentage    Int
+  restaurant_id String     @db.Uuid
+  created_at    DateTime   @default(now()) @db.Timestamp(6)
+  updated_at    DateTime   @default(now()) @db.Timestamp(6)
+  restaurant    restaurant @relation(fields: [restaurant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  order         order[]
+}
+
+model food_item {
+  id              String       @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name            String       @db.VarChar(255)
+  sub_category_id String       @db.Uuid
+  created_at      DateTime     @default(now()) @db.Timestamp(6)
+  updated_at      DateTime     @default(now()) @db.Timestamp(6)
+  add_on          add_on[]
+  sub_category    sub_category @relation(fields: [sub_category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  variant         variant[]
+}
+
+model order {
+  id               String        @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  shopping_cart_id String        @db.Uuid
+  discount_id      String?       @db.Uuid
+  created_at       DateTime      @default(now()) @db.Timestamp(6)
+  updated_at       DateTime      @default(now()) @db.Timestamp(6)
+  discount         discount?     @relation(fields: [discount_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  shopping_cart    shopping_cart @relation(fields: [shopping_cart_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model restaurant {
+  id          String     @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  description String?    @db.VarChar(255)
+  image       String?    @db.VarChar(255)
+  name        String     @db.VarChar(255)
+  created_at  DateTime   @default(now()) @db.Timestamp(6)
+  updated_at  DateTime   @default(now()) @db.Timestamp(6)
+  user_id     String     @db.Uuid
+  tenant_id   String     @db.VarChar(255)
+  category    category[]
+  discount    discount[]
+  user        user       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model shopping_cart {
+  id         String   @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  user_id    String   @db.Uuid
+  created_at DateTime @default(now()) @db.Timestamp(6)
+  updated_at DateTime @default(now()) @db.Timestamp(6)
+  order      order[]
+  user       user     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sub_category {
+  id          String      @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name        String      @db.VarChar(255)
+  category_id String      @db.Uuid
+  created_at  DateTime    @default(now()) @db.Timestamp(6)
+  updated_at  DateTime    @default(now()) @db.Timestamp(6)
+  food_item   food_item[]
+  category    category    @relation(fields: [category_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email         String          @unique @db.VarChar(255)
+  firstName     String?         @db.VarChar(255)
+  lastName      String?         @db.VarChar(255)
+  roq_user_id   String          @db.VarChar(255)
+  tenant_id     String          @db.VarChar(255)
+  created_at    DateTime        @default(now()) @db.Timestamp(6)
+  updated_at    DateTime        @default(now()) @db.Timestamp(6)
+  restaurant    restaurant[]
+  shopping_cart shopping_cart[]
+}
+
+model variant {
+  id           String    @id @default(dbgenerated("uuid_generate_v4()")) @db.Uuid
+  name         String    @db.VarChar(255)
+  food_item_id String    @db.Uuid
+  created_at   DateTime  @default(now()) @db.Timestamp(6)
+  updated_at   DateTime  @default(now()) @db.Timestamp(6)
+  food_item    food_item @relation(fields: [food_item_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
